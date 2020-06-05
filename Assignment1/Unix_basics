@@ -1,0 +1,553 @@
+System Calls :
+1)fork(),sleep:
+
+#include<stdio.h>
+#include<unistd.h>
+
+int main()
+{
+	int id;
+	printf("let's get started\n");
+	id=fork();
+	if(id==0){
+	printf("child's process: ");
+	}
+	else if(id>0){
+	sleep(1);
+	printf("parent process:");
+	}
+	else
+	{
+	printf("function not valid\n");
+	}
+	printf("\n");
+	return 0;
+}
+OUTPUT :
+185001110@OSNPL-C27:~/Downloads$ gcc forksleep.c -o forksleep
+185001110@OSNPL-C27:~/Downloads$ ./forksleep
+let's get started
+child's process:
+parent process:
+185001110@OSNPL-C27:~/Downloads$
+
+
+2)
+//2)getpid(),getppid():
+
+#include<stdio.h>
+#include<unistd.h>
+int main()
+{
+	int id;
+	printf("let's get started\n");
+	id=fork();
+
+	if(id==0){
+	printf("---child's id: %d\n",getpid());
+	printf("---child's parent process id: %d\n",getppid());
+	}
+	else if(id>0)
+	{
+	printf("---parent's id: %d\n",getpid());
+	printf("---parent's parent id: %d\n",getppid());
+	}
+	else
+	{
+	printf("function not valid\n");
+	}
+	return 0;
+}
+
+Output:
+185001110@OSNPL-C27:~/Downloads$ ./get
+let's get started
+---parent's id: 3823
+---parent's parent id: 3687
+---child's id: 3824
+---child's parent process id: 3823
+185001110@OSNPL-C27:~/Downloads$
+
+4)
+//4)wait():
+
+#include<stdio.h>
+#include<stdlib.h>
+#include<unistd.h>
+#include<sys/types.h>
+#include<sys/wait.h>
+void main()
+{
+	int id;
+
+	printf("let's get started\n");
+	id=fork();
+	if(id==0){
+	printf("child's process: ");
+	}
+	else if(id>0){
+	printf("Wait and then Exit\n");
+	wait(0);
+	printf("parent process:\n");
+	exit(0);
+	}
+	else{
+	printf("function not valid\n");
+	}
+	printf("\n");
+}
+Output :
+185001110@OSNPL-C27:~/Downloads$ ./waitexit
+let's get started
+Wait and then Exit
+child's process:
+parent process:
+185001110@OSNPL-C27:~/Downloads$
+
+5)
+//5)execl:
+
+#include<stdio.h>
+
+#include<unistd.h>
+
+void main()
+
+{
+
+	printf("This is SSN\n");
+	
+	execl("/bin/ls","ls",NULL);
+
+	printf("Parent process");
+
+}
+
+Output:
+
+185001110@OSNPL-C27:~/Downloads$ ./exec
+This is SSN
+1-ex1-study.pdf  blah	   dir.c    forksleep	 ls	  scall.c    waitexit.c
+A1.txt		 cp	   exec     forksleep.c  LS.c	  sycall
+A3		 CP.c	   exec.c   get		 newfile  sycall.c
+A3.c		 create    file     get.c	 pipe	  syscall.c
+A4		 create.c  file.c   grep	 pipe.c   temp
+A4.c		 dir	   filecpp  GREP.c	 scall	  waitexit
+185001110@OSNPL-C27:~/Downloads$
+
+6)
+//6)open,close,read,write:
+
+#include<stdio.h>
+
+#include<unistd.h>
+
+#include<stdlib.h>
+
+#include<fcntl.h>
+
+
+void main(int argc,char *argv[])
+
+{
+
+char buf[1000];
+
+int co,f1,f2;
+
+if(argc!=3)
+
+{
+
+printf("not enough arguments");
+
+exit(0);
+
+}
+
+f1=open(argv[1],O_RDONLY,0777);
+
+if(f1==-1)
+
+{
+
+printf("file1 not exists");
+
+exit(0);
+
+}
+
+f2=open(argv[2],O_WRONLY|O_CREAT,0777);
+
+if(f2==-1)
+
+{
+
+printf("file2 not exists %s",argv[2]);
+
+
+}
+
+while((co=read(f1,buf,sizeof(buf)))!=0)
+
+{
+
+write(f2,buf,co);
+printf("%s",buf);
+
+printf("%d\n",co);
+
+break;
+
+}
+
+close(f1);
+
+close(f2);
+
+}
+
+Output :
+185001110@OSNPL-C27:~/Downloads$ ./filecpp newfile dest
+Hi
+Hello
+How are you?
+22
+185001110@OSNPL-C27:~/Downloads$ cat dest
+Hi
+Hello
+How are you?
+185001110@OSNPL-C27:~/Downloads$
+
+7)
+//7)create:
+
+
+#include<stdio.h>
+
+#include<stdlib.h>
+
+#include <sys/types.h>
+
+#include <unistd.h>
+
+#include<fcntl.h>
+
+
+void main(int argc,char* argv[])
+
+{
+
+pid_t a;
+
+int f1;
+
+a=fork();
+
+if(a==0)
+
+{
+
+printf("child process\n");
+
+f1=creat(argv[1],O_RDONLY);
+
+}
+
+else
+
+{
+
+printf("parent process\n");
+
+}
+
+}
+
+Output :
+
+185001110@OSNPL-C27:~/Downloads$ ./create lab
+parent process
+child process
+185001110@OSNPL-C27:~/Downloads$ ls -l lab
+---------- 1 185001110 185001110 0 Jan 28 14:42 lab
+185001110@OSNPL-C27:~/Downloads$
+
+8)
+//8)opendir,readdir:
+
+
+#include<stdio.h>
+
+#include<stdlib.h>
+
+#include <sys/types.h>
+
+#include <dirent.h>
+
+void main(int argc,char *argv[])
+
+{
+
+DIR *dir;
+
+struct dirent *dp;
+
+pid_t a=fork();
+
+if(a==0)
+
+
+{
+
+printf("child process\n");
+
+if ((dir = opendir (argv[1])) == NULL)
+
+{
+
+
+printf("directory not exists\n");
+
+exit(0);
+
+}
+
+
+while ((dp = readdir (dir)) != NULL) printf("\n%s",dp->d_name);
+
+}
+
+else
+
+{
+
+printf("parent process\n");
+
+}
+printf("\n");
+}
+
+OUPUT :
+
+185001110@OSNPL-C27:~/Downloads$ ./dir .
+parent process
+
+child process
+.
+..
+ls
+LS.c
+GREP.c
+waitexit.c
+file.c
+exec
+create.c
+A3
+dir
+lab
+forksleep
+file
+cp
+CP.c
+create
+temp
+exec.c
+dest
+pipe
+A4
+A4.c
+filecpp
+grep
+forksleep.c
+pipe.c
+syscall.c
+A3.c
+sycall.c
+get.c
+waitexit
+scall.c
+scall
+newfile
+sycall
+1-ex1-study.pdf
+A1.txt
+get
+dir.c
+blah
+exit
+
+
+9)
+//9)pipe:
+
+
+#include <stdio.h>
+
+#include <stdlib.h>
+
+#include <unistd.h>
+
+#include <string.h>
+
+void main()
+
+{
+
+	int pipefds[2];
+
+	char buf[5];
+
+	if(pipe(pipefds) == -1)
+
+	{
+
+	perror("pipe");
+
+	exit(0);
+
+	}
+
+	char *pin = "prasannas view";
+
+	write(pipefds[1], pin, 6);
+
+	read(pipefds[0], buf, 6);
+
+	printf("PIPE %s\n", buf);
+
+}
+
+OUTPUT :
+
+185001110@OSNPL-C27:~/Downloads$ ./pipe
+PIPE prasanna
+185001110@OSNPL-C27:~/Downloads$
+
+
+SYSTEM COMMANDS
+
+1)cp
+185001110@OSNPL-C27:~/Downloads$ cat A1.txt
+Script started on 2020-01-21 00:11:29+0530
+prasanna@prasanna-VirtualBox:~/Downloads/cmd$ cat > txtfile
+Hi        
+This is a text file
+This is a line.
+End of file.
+prasanna@prasanna-VirtualBox:~/Downloads/cmd$ cat txtfile
+Hi
+This is a text file
+This is a line.
+End of file.
+prasanna@prasanna-VirtualBox:~/Downloads/cmd$ cp txtfile newfile
+prasanna@prasanna-VirtualBox:~/Downloads/cmd$ cat newfile
+Hi
+This is a text file
+This is a line.
+End of file.
+prasanna@prasanna-VirtualBox:~/Downloads/cmd$ cp -i txtfile newfile
+cp: overwrite 'newfile'? y
+
+2)mv
+prasanna@prasanna-VirtualBox:~/Downloads/cmd$ mv txtfile textfile
+
+3)ls
+prasanna@prasanna-VirtualBox:~/Downloads/cmd$ ls
+a1.txt  A1.txt  newfile  textfile
+prasanna@prasanna-VirtualBox:~/Downloads/cmd$ ls ..
+ A3.c                                       file                      prasanna-CS1403-S02.zip
+ Anaconda2-2019.07-Linux-x86_64.sh          grep                      prasanna-CS1403-S03.ipynb
+ assignment-02-filesystem-prasanna119.ipynb  'GREP(1).c'                SemEval-2020-master
+ assignment-03-question.ipynb               GREP.c                    SemEval-2020-master.zip
+ cmd                                        ls                        unixlab-master.zip
+ cp                                         LS.c                      UnixLab-master.zip
+ CP.c                                       newt
+ dirs                                       prasanna-CS1403-S02.ipynb
+prasanna@prasanna-VirtualBox:~/Downloads/cmd$ ls -l
+total 16
+-rw-r--r-- 1 prasanna prasanna 6909 Jan 17 23:14 a1.txt
+-rw-r--r-- 1 prasanna prasanna    0 Jan 21 00:11 A1.txt
+-rw-r--r-- 1 prasanna prasanna   52 Jan 21 00:12 newfile
+-rw-r--r-- 1 prasanna prasanna   52 Jan 21 00:12 textfile
+
+5)chmod
+prasanna@prasanna-VirtualBox:~/Downloads/cmd$ chmod u+x newfile
+prasanna@prasanna-VirtualBox:~/Downloads/cmd$ ls
+a1.txt  A1.txt  newfile  textfile
+
+6)mkdir
+prasanna@prasanna-VirtualBox:~/Downloads/cmd$ mkdir sub
+prasanna@prasanna-VirtualBox:~/Downloads/cmd$ ls
+a1.txt  A1.txt  newfile  sub  textfile
+
+7)rmdir
+prasanna@prasanna-VirtualBox:~/Downloads/cmd$ rmdir sub
+prasanna@prasanna-VirtualBox:~/Downloads/cmd$ ls
+a1.txt  A1.txt  newfile  textfile
+prasanna@prasanna-VirtualBox:~/Downloads/cmd$ rm newfile
+
+8)wc
+prasanna@prasanna-VirtualBox:~/Downloads/cmd$ wc textfile
+ 4 13 52 textfile
+
+9)who
+prasanna@prasanna-VirtualBox:~/Downloads/cmd$ who
+prasanna   :0           2020-01-21 00:05 (:0)
+prasanna@prasanna-VirtualBox:~/Downloads/cmd$ cat > file2
+Hi -1
+hey -2
+Hello -3
+Greetings -4
+Welcome -5
+Bye -6
+Goodbye -7
+See you next time -8
+Sayonara -9
+Next time -10
+End of file -11
+
+10)head
+prasanna@prasanna-VirtualBox:~/Downloads/cmd$ head file2
+Hi -1
+hey -2
+Hello -3
+Greetings -4
+Welcome -5
+Bye -6
+Goodbye -7
+See you next time -8
+Sayonara -9
+Next time -10
+
+12)tail
+prasanna@prasanna-VirtualBox:~/Downloads/cmd$ tail file2
+hey -2
+Hello -3
+Greetings -4
+Welcome -5
+Bye -6
+Goodbye -7
+See you next time -8
+Sayonara -9
+Next time -10
+End of file -11
+
+13)awk
+prasanna@prasanna-VirtualBox:~/Downloads/cmd$ awk '{ print $0}' file2
+Hi -1
+hey -2
+Hello -3
+Greetings -4
+Welcome -5
+Bye -6
+Goodbye -7
+See you next time -8
+Sayonara -9
+Next time -10
+End of file -11
+prasanna@prasanna-VirtualBox:~/Downloads/cmd$ exit
+exit
+
+Script done on 2020-01-21 00:15:14+0530
+185001110@OSNPL-C27:~/Downloads$
